@@ -18,18 +18,25 @@ class Levels(IntEnum):
     FOURTH = 4
     FIFTH = 5
 
+
 class PokeNameManager:
     '''
-    回答可能なポケモンリストと、
-    答えとなるランダムな1匹を返す。
+    ユーザが回答可能なポケモン名リストと、答えとなるランダムな1匹の選出を提供するクラス。
     '''
     def __init__(self):
+        '''
+        TODO 初期化でファイルIOを実施しているため、あまり良くない
+        '''
         with open('pokelist_five.json', encoding="utf-8") as f:
             self.pokelist_five = json.load(f)
         with open('pokelist.json', encoding="utf-8") as f:
             self.pokelist = json.load(f)
 
     def get_answer_pokemon(self, level):
+        '''
+        答えとなるポケモン名を１つ返す。
+        levelで指定した範囲の世代のポケモンを抽選対象にする。
+        '''
         if level == Levels.FIRST:
             return self.pokelist_five["first"][random.randint(0, len(self.pokelist_five["first"])-1)]
         elif level == Levels.SECOND:
@@ -42,19 +49,21 @@ class PokeNameManager:
             return self.pokelist_five["fifth"][random.randint(0, len(self.pokelist_five["fifth"])-1)]
         elif level == Levels.DEFAULT:
             lists = self.pokelist_five["first"] + self.pokelist_five["second"] + self.pokelist_five["third"] + self.pokelist_five["fourth"]
-            return lists[random.randint(0, len(self.pokelist_five["fifth"])-1)]
+            return lists[random.randint(0, len(lists)-1)]
         else:
             raise Exception
 
     def get_answerable_pokemons(self, level):
         '''
-        現状全てのポケモンを回答可能にしている。
+        ユーザが回答可能なポケモン名のリストを返す。
+        levelで指定した範囲の世代のポケモンのみユーザが回答可能にしようと構想していたが、未実装。
+        現状全ての世代のポケモンを回答可能にしている。
         '''
         return self.pokelist["first"] + self.pokelist["second"] + self.pokelist["third"] + self.pokelist["fourth"] + self.pokelist["fifth"]
 
 class FiftyTable:
     '''
-    五十音表
+    ユーザが入力済みの文字を五十音表で管理するクラス
     '''
     def __init__(self):
         self.fifty = {
@@ -100,10 +109,10 @@ class FiftyTable:
             if c >= 17:
                 c = 0
 
-
 class Cell:
     '''
-    答えの任意の1文字
+    ユーザの回答結果を保持するクラス
+    ユーザの回答の任意の1文字に対応している。
     '''
     def __init__(self, chara):
         self.char = chara
@@ -113,7 +122,8 @@ class Cell:
 
 class CellManager:
     '''
-    答えのCellを5つ持つ
+    ユーザの回答結果の管理クラス
+    回答1文字に対応するCellクラスを5つ管理する。
 
     TODO レベルを表すIntEnumを受け取り、応じた答えを作成する。
     不正な値であればデフォルトで作成する。
@@ -141,7 +151,7 @@ class CellManager:
 
     def hit(self, input_word):
         '''
-        入力に対して答えと確認する。
+        入力に対して一致の確認を行う。
 
         args:
             input_word:     回答文字列
@@ -182,7 +192,6 @@ class CellManager:
                 # 文字も外れていれば、ステート変化
                 input_cell.state = CellState.MISS
         return {"result": 0, "cells":input_cells.values()}
-
 
 class GameManager:
     def __init__(self, level_num):
